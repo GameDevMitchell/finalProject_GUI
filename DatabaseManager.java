@@ -15,17 +15,19 @@ public class DatabaseManager {
                 registration_number VARCHAR(20) PRIMARY KEY,
                 brand VARCHAR(50) NOT NULL,
                 model VARCHAR(50) NOT NULL,
-                year INT NOT NULL,
+                "year" INT NOT NULL,
                 color VARCHAR(30) NOT NULL,
                 daily_rate DOUBLE NOT NULL,
                 is_available BOOLEAN DEFAULT true
             )""";
 
     private static final String INSERT_CAR = """
-            INSERT INTO cars (registration_number, brand, model, year, color, daily_rate, is_available)
+            INSERT INTO cars (registration_number, brand, model, "year", color, daily_rate, is_available)
             VALUES (?, ?, ?, ?, ?, ?, ?)""";
 
-    private static final String GET_ALL_CARS = "SELECT * FROM cars";
+    private static final String GET_ALL_CARS = """
+            SELECT registration_number, brand, model, "year", color, daily_rate, is_available
+            FROM cars""";
 
     // Load the Derby JDBC driver when the class is loaded
     static {
@@ -40,8 +42,8 @@ public class DatabaseManager {
 
     private static void initializeDatabase() {
         try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement()) {
-            
+                Statement stmt = conn.createStatement()) {
+
             // Check if table exists
             try {
                 stmt.execute("SELECT 1 FROM cars");
@@ -51,7 +53,7 @@ public class DatabaseManager {
                 System.out.println("Creating new database table...");
                 stmt.execute(CREATE_TABLE);
             }
-            
+
         } catch (SQLException e) {
             showError("Error initializing database: " + e.getMessage());
             e.printStackTrace();
@@ -72,8 +74,8 @@ public class DatabaseManager {
     // Add a new car to the database
     public static boolean addCar(Car car) {
         try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(INSERT_CAR)) {
-            
+                PreparedStatement pstmt = conn.prepareStatement(INSERT_CAR)) {
+
             pstmt.setString(1, car.getRegistrationNumber());
             pstmt.setString(2, car.getBrand());
             pstmt.setString(3, car.getModel());
@@ -81,14 +83,14 @@ public class DatabaseManager {
             pstmt.setString(5, car.getColor());
             pstmt.setDouble(6, car.getDailyRate());
             pstmt.setBoolean(7, car.isAvailable());
-            
+
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
                 System.out.println("Car added successfully: " + car.getRegistrationNumber());
                 return true;
             }
             return false;
-            
+
         } catch (SQLException e) {
             System.err.println("Error adding car: " + e.getMessage());
             e.printStackTrace();
@@ -100,39 +102,37 @@ public class DatabaseManager {
     // Get all cars from the database
     public static List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
-        
+
         try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(GET_ALL_CARS)) {
-            
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(GET_ALL_CARS)) {
+
             while (rs.next()) {
                 Car car = new Car(
-                    rs.getString("registration_number"),
-                    rs.getString("brand"),
-                    rs.getString("model"),
-                    rs.getInt("year"),
-                    rs.getString("color"),
-                    rs.getDouble("daily_rate")
-                );
+                        rs.getString("registration_number"),
+                        rs.getString("brand"),
+                        rs.getString("model"),
+                        rs.getInt("year"),
+                        rs.getString("color"),
+                        rs.getDouble("daily_rate"));
                 car.setAvailable(rs.getBoolean("is_available"));
                 cars.add(car);
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Error retrieving cars: " + e.getMessage());
             e.printStackTrace();
             showError("Error retrieving cars: " + e.getMessage());
         }
-        
+
         return cars;
     }
 
     private static void showError(String message) {
         JOptionPane.showMessageDialog(
-            null,
-            message,
-            "Database Error",
-            JOptionPane.ERROR_MESSAGE
-        );
+                null,
+                message,
+                "Database Error",
+                JOptionPane.ERROR_MESSAGE);
     }
 }
