@@ -1,5 +1,4 @@
 
-// Basic Java and Swing imports
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -7,18 +6,43 @@ import java.awt.event.*;
 import java.util.List;
 
 public class CarForm extends JFrame {
-    private JTextField registrationField, brandField, modelField, yearField, colorField, rateField;
+    private JTextField registrationField, brandField, modelField, yearField, colorField, rateField, searchField;
     private JTextArea outputArea;
-    private JButton addButton, viewAllButton, clearButton;
+    private JButton addButton, viewAllButton, clearButton, searchButton;
+    private JPanel mainPanel, formPanel, buttonPanel, searchPanel;
 
     public CarForm() {
         // Set up the main window
         setTitle("SmartDrive Rentals - Car Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(800, 600));
-        setLocationRelativeTo(null); // Center on screen
+        setMinimumSize(new Dimension(900, 700));
+        setLocationRelativeTo(null);
 
         // Main container with some padding
+        mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.setBackground(new Color(240, 240, 245));
+
+        // Create form panel
+        createFormPanel();
+        // Create search panel
+        createSearchPanel();
+        // Create button panel
+        createButtonPanel();
+        // Create output area
+        createOutputArea();
+
+        // Add panels to main panel
+        mainPanel.add(formPanel, BorderLayout.NORTH);
+        mainPanel.add(searchPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Add main panel to frame
+        add(mainPanel, BorderLayout.CENTER);
+        add(new JScrollPane(outputArea), BorderLayout.SOUTH);
+
+        // Display the window
+        pack();
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         mainPanel.setBackground(new Color(240, 243, 248)); // Light blue-gray background
@@ -467,26 +491,19 @@ public class CarForm extends JFrame {
             sb.append(String.format("Total cars: %d\n", cars.size()));
 
             outputArea.setText(sb.toString());
-        }
-    }
-
-    // This is where the program starts
-    public static void main(String[] args) {
-        // Make the UI look like a native application
         try {
-            // Set the system look and feel for a native appearance
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // Get and validate input
+            String registration = registrationField.getText().trim();
+            String brand = brandField.getText().trim();
+            String model = modelField.getText().trim();
+            int year = Integer.parseInt(yearField.getText().trim());
+            String color = colorField.getText().trim();
+            double dailyRate = Double.parseDouble(rateField.getText().trim());
 
-            // Custom UI settings for a modern look
-            UIManager.put("Button.arc", 6);
-            UIManager.put("Component.arc", 6);
-            UIManager.put("TextComponent.arc", 4);
-
-            // Better font rendering
-            System.setProperty("awt.useSystemAAFontSettings", "on");
-            System.setProperty("swing.aatext", "true");
-
-            // Set default font for better cross-platform consistency
+            if (registration.isEmpty() || brand.isEmpty() || model.isEmpty() || color.isEmpty()) {
+                JOptionPane.showMessageDialog(CarForm.this,
+                        "Please fill in all fields.",
+                        "Input Error",
             Font defaultFont = new Font("Segoe UI", Font.PLAIN, 13);
             UIManager.put("Button.font", defaultFont);
             UIManager.put("Label.font", defaultFont);
