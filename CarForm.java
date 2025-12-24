@@ -1,3 +1,4 @@
+// CarForm.java
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -5,77 +6,79 @@ import java.awt.event.*;
 import java.util.List;
 
 public class CarForm extends JFrame {
-    private JTextField registrationField, brandField, modelField, yearField, colorField, rateField, searchField;
+    private JTextField registrationField, brandField, modelField, 
+                      yearField, colorField, rateField, searchField;
     private JTextArea outputArea;
     private JButton addButton, viewAllButton, clearButton, searchButton;
-    private JPanel mainPanel, formPanel, buttonPanel, searchPanel;
 
     public CarForm() {
         // Set up the main window
-        setTitle("SmartDrive Rentals - Car Management System");
+        setTitle("Car Rental System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(900, 700));
+        setSize(800, 700);
         setLocationRelativeTo(null);
 
-        // Main container with some padding
-        mainPanel = new JPanel(new BorderLayout(10, 10));
+        // Main panel with border layout
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        mainPanel.setBackground(new Color(240, 240, 245));
 
         // Create form panel
-        createFormPanel();
+        JPanel formPanel = createFormPanel();
+        
         // Create search panel
-        createSearchPanel();
+        JPanel searchPanel = createSearchPanel();
+        
         // Create button panel
-        createButtonPanel();
+        JPanel buttonPanel = createButtonPanel();
+        
         // Create output area
-        createOutputArea();
+        outputArea = new JTextArea(10, 50);
+        outputArea.setEditable(false);
+        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane scrollPane = new JScrollPane(outputArea);
 
-        // Add panels to main panel
+        // Add components to main panel
         mainPanel.add(formPanel, BorderLayout.NORTH);
         mainPanel.add(searchPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
         
-        // Add main panel to frame
-        add(mainPanel, BorderLayout.CENTER);
-        add(new JScrollPane(outputArea), BorderLayout.SOUTH);
+        // Add main panel and output area to frame
+        add(mainPanel, BorderLayout.NORTH);
+        add(scrollPane, BorderLayout.CENTER);
 
-        // Display the window
-        pack();
+        // Initialize database
+        DatabaseManager.getAllCars(); // This will create the table if it doesn't exist
     }
 
-    private void createFormPanel() {
-        formPanel = new JPanel(new GridLayout(6, 2, 5, 5));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Add New Car"));
-        formPanel.setBackground(Color.WHITE);
-
+    private JPanel createFormPanel() {
+        JPanel panel = new JPanel(new GridLayout(6, 2, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder("Add New Car"));
+        
         // Create form fields
-        registrationField = createFormField("Registration Number:", formPanel);
-        brandField = createFormField("Brand:", formPanel);
-        modelField = createFormField("Model:", formPanel);
-        yearField = createFormField("Year:", formPanel);
-        colorField = createFormField("Color:", formPanel);
-        rateField = createFormField("Daily Rate ($):", formPanel);
+        registrationField = createFormField("Registration Number:", panel);
+        brandField = createFormField("Brand:", panel);
+        modelField = createFormField("Model:", panel);
+        yearField = createFormField("Year:", panel);
+        colorField = createFormField("Color:", panel);
+        rateField = createFormField("Daily Rate ($):", panel);
+        
+        return panel;
     }
 
     private JTextField createFormField(String label, JPanel panel) {
         JLabel jLabel = new JLabel(label);
-        jLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         panel.add(jLabel);
         
         JTextField textField = new JTextField(20);
-        textField.setFont(new Font("Arial", Font.PLAIN, 14));
-        textField.setMargin(new Insets(5, 5, 5, 5));
         panel.add(textField);
         
         return textField;
     }
 
-    private void createSearchPanel() {
-        searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        searchPanel.setBorder(BorderFactory.createTitledBorder("Search Cars"));
-        searchPanel.setBackground(Color.WHITE);
-
+    private JPanel createSearchPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        panel.setBorder(BorderFactory.createTitledBorder("Search Cars"));
+        
         JLabel searchLabel = new JLabel("Search by Registration or Name:");
         searchField = new JTextField(25);
         searchButton = new JButton("Search");
@@ -86,15 +89,16 @@ public class CarForm extends JFrame {
         searchButton.setFocusPainted(false);
         searchButton.addActionListener(new SearchCarListener());
         
-        searchPanel.add(searchLabel);
-        searchPanel.add(searchField);
-        searchPanel.add(searchButton);
+        panel.add(searchLabel);
+        panel.add(searchField);
+        panel.add(searchButton);
+        
+        return panel;
     }
 
-    private void createButtonPanel() {
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        buttonPanel.setBackground(new Color(240, 240, 245));
-
+    private JPanel createButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        
         // Create buttons with icons
         addButton = createStyledButton("Add Car", UIManager.getIcon("OptionPane.informationIcon"));
         viewAllButton = createStyledButton("View All Cars", UIManager.getIcon("FileChooser.listViewIcon"));
@@ -106,46 +110,19 @@ public class CarForm extends JFrame {
         clearButton.addActionListener(e -> clearForm());
 
         // Add buttons to panel
-        buttonPanel.add(addButton);
-        buttonPanel.add(viewAllButton);
-        buttonPanel.add(clearButton);
+        panel.add(addButton);
+        panel.add(viewAllButton);
+        panel.add(clearButton);
+        
+        return panel;
     }
 
     private JButton createStyledButton(String text, Icon icon) {
         JButton button = new JButton(text, icon);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
         button.setBackground(new Color(70, 130, 180));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setOpaque(true);
-        
-        // Add hover effect
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(100, 150, 200));
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(70, 130, 180));
-            }
-        });
-        
         return button;
-    }
-
-    private void createOutputArea() {
-        outputArea = new JTextArea(10, 50);
-        outputArea.setEditable(false);
-        outputArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        outputArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        outputArea.setBackground(new Color(250, 250, 250));
-        outputArea.setText("Welcome to SmartDrive Rentals Car Management System!\n\n" +
-                "To get started:\n" +
-                "1. Fill in the car details and click 'Add Car' to save a new car\n" +
-                "2. Use the search box to find specific cars\n" +
-                "3. Click 'View All Cars' to see all registered cars\n" +
-                "4. Use 'Clear Form' to reset the input fields");
     }
 
     private void clearForm() {
@@ -167,24 +144,7 @@ public class CarForm extends JFrame {
 
         StringBuilder sb = new StringBuilder("=== All Registered Cars ===\n\n");
         for (Car car : cars) {
-            sb.append(String.format("""
-                    Registration: %s
-                    Brand: %s
-                    Model: %s
-                    Year: %d
-                    Color: %s
-                    Daily Rate: $%.2f
-                    Available: %s
-                    --------------------------
-                    """,
-                    car.getRegistrationNumber(),
-                    car.getBrand(),
-                    car.getModel(),
-                    car.getYear(),
-                    car.getColor(),
-                    car.getDailyRate(),
-                    car.isAvailable() ? "Yes" : "No"
-            ));
+            sb.append(car).append("--------------------------\n");
         }
         outputArea.setText(sb.toString());
     }
@@ -210,7 +170,7 @@ public class CarForm extends JFrame {
                 }
 
                 // Create and add car
-                Car car = new Car(registration, brand, model, year, color, dailyRate, true);
+                Car car = new Car(registration, brand, model, year, color, dailyRate);
                 if (DatabaseManager.addCar(car)) {
                     outputArea.setText("Car added successfully:\n" + car);
                     clearForm();
@@ -257,24 +217,7 @@ public class CarForm extends JFrame {
                     car.getBrand().equalsIgnoreCase(searchTerm) ||
                     car.getModel().equalsIgnoreCase(searchTerm)) {
                     
-                    result.append(String.format("""
-                            Registration: %s
-                            Brand: %s
-                            Model: %s
-                            Year: %d
-                            Color: %s
-                            Daily Rate: $%.2f
-                            Available: %s
-                            --------------------------
-                            """,
-                            car.getRegistrationNumber(),
-                            car.getBrand(),
-                            car.getModel(),
-                            car.getYear(),
-                            car.getColor(),
-                            car.getDailyRate(),
-                            car.isAvailable() ? "Yes" : "No"
-                    ));
+                    result.append(car).append("--------------------------\n");
                     found = true;
                 }
             }
@@ -299,14 +242,13 @@ public class CarForm extends JFrame {
             UIManager.put("TextField.font", font);
             UIManager.put("TextArea.font", font);
             
+            // Run the application
+            SwingUtilities.invokeLater(() -> {
+                CarForm form = new CarForm();
+                form.setVisible(true);
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // Run the application
-        SwingUtilities.invokeLater(() -> {
-            CarForm form = new CarForm();
-            form.setVisible(true);
-        });
     }
 }
