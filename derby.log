@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-Wed Dec 24 17:21:46 EET 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-019b-50f3-ad66-00000cfdb320 
+Wed Dec 24 17:34:32 EET 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-019b-50ff-5d7d-00000eee9b38 
 on database directory C:\SWE 395_Labs\finalProject_GUI\smartdrive_rentals with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@105be200 
 Loaded from file:/C:/SWE%20395_Labs/finalProject_GUI/lib/derby.jar
 java.vendor=Oracle Corporation
