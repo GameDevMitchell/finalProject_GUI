@@ -4,13 +4,14 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 public class DatabaseManager {
-    // Database connection details - update these with your MySQL credentials
-    private static final String URL = "jdbc:mysql://localhost:3306/smartdrive_rentals?useSSL=false&allowPublicKeyRetrieval=true";
-    private static final String USER = "root";
-    private static final String PASSWORD = ""; // Leave empty if no password
+    // Database connection details for JavaDB (Derby)
+    private static final String DB_NAME = "smartdrive_rentals";
+    private static final String URL = "jdbc:derby:" + DB_NAME + ";create=true";
+    private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 
     // SQL queries
-    private static final String CREATE_TABLE = """n            CREATE TABLE IF NOT EXISTS cars (
+    private static final String CREATE_TABLE = """
+            CREATE TABLE cars (
                 registration_number VARCHAR(20) PRIMARY KEY,
                 brand VARCHAR(50) NOT NULL,
                 model VARCHAR(50) NOT NULL,
@@ -19,6 +20,16 @@ public class DatabaseManager {
                 daily_rate DOUBLE NOT NULL,
                 is_available BOOLEAN DEFAULT true
             )""";
+
+    // Load the Derby JDBC driver when the class is loaded
+    static {
+        try {
+            Class.forName(DRIVER);
+            initializeDatabase();
+        } catch (Exception e) {
+            showError("Failed to initialize database: " + e.getMessage());
+        }
+    }
 
     private static final String INSERT_CAR = """n            INSERT INTO cars (registration_number, brand, model, year, color, daily_rate, is_available)
             VALUES (?, ?, ?, ?, ?, ?, ?)""";
@@ -35,31 +46,29 @@ public class DatabaseManager {
         } catch (Exception e) {
             showError("Failed to initialize database: " + e.getMessage());
         }
-    }
-
     private static void initializeDatabase() {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             
-            // Create the database if it doesn't exist
-            stmt.execute("CREATE DATABASE IF NOT EXISTS smartdrive_rentals");
-            stmt.execute("USE smartdrive_rentals");
-            
-            // Create the cars table if it doesn't exist
-            stmt.executeUpdate(CREATE_TABLE);
+            // Check if table exists
+            try {
+                stmt.execute("SELECT 1 FROM cars");
+                // Table exists, no need to create
+            } catch (SQLException e) {
+                // Table doesn't exist, create it
+                stmt.execute(CREATE_TABLE);
+            }
             
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Error initializing database: " + e.getMessage());
+            showError("Error initializing database: " + e.getMessage());
         }
     }
 
     private static Connection getConnection() throws SQLException {
         try {
-            // Try to establish a connection with a 5-second timeout
-            return DriverManager.getConnection(URL, USER, PASSWORD);
+            return DriverManager.getConnection(URL);
         } catch (SQLException e) {
-            showError("Could not connect to the database. Please check if MySQL is running and the credentials are correct.\n\nError: " + e.getMessage());
+            showError("Could not connect to the database. Error: " + e.getMessage());
             throw e;
         }
     }
