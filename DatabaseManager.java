@@ -21,6 +21,12 @@ public class DatabaseManager {
                 is_available BOOLEAN DEFAULT true
             )""";
 
+    private static final String INSERT_CAR = """
+            INSERT INTO cars (registration_number, brand, model, year, color, daily_rate, is_available)
+            VALUES (?, ?, ?, ?, ?, ?, ?)""";
+
+    private static final String GET_ALL_CARS = "SELECT * FROM cars";
+
     // Load the Derby JDBC driver when the class is loaded
     static {
         try {
@@ -28,24 +34,10 @@ public class DatabaseManager {
             initializeDatabase();
         } catch (Exception e) {
             showError("Failed to initialize database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private static final String INSERT_CAR = """n            INSERT INTO cars (registration_number, brand, model, year, color, daily_rate, is_available)
-            VALUES (?, ?, ?, ?, ?, ?, ?)""";
-
-    private static final String GET_ALL_CARS = "SELECT * FROM cars";
-
-    // Load the MySQL JDBC driver when the class is loaded
-    static {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            initializeDatabase();
-        } catch (ClassNotFoundException e) {
-            showError("MySQL JDBC Driver not found. Please add it to your project's classpath.");
-        } catch (Exception e) {
-            showError("Failed to initialize database: " + e.getMessage());
-        }
     private static void initializeDatabase() {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
@@ -53,23 +45,27 @@ public class DatabaseManager {
             // Check if table exists
             try {
                 stmt.execute("SELECT 1 FROM cars");
-                // Table exists, no need to create
+                System.out.println("Database table already exists");
             } catch (SQLException e) {
                 // Table doesn't exist, create it
+                System.out.println("Creating new database table...");
                 stmt.execute(CREATE_TABLE);
             }
             
         } catch (SQLException e) {
             showError("Error initializing database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     private static Connection getConnection() throws SQLException {
         try {
+            System.out.println("Connecting to database: " + URL);
             return DriverManager.getConnection(URL);
         } catch (SQLException e) {
-            showError("Could not connect to the database. Error: " + e.getMessage());
-            throw e;
+            String errorMsg = "Could not connect to the database. Error: " + e.getMessage();
+            showError(errorMsg);
+            throw new SQLException(errorMsg, e);
         }
     }
 
@@ -95,7 +91,8 @@ public class DatabaseManager {
             
         } catch (SQLException e) {
             System.err.println("Error adding car: " + e.getMessage());
-            showError("Database error: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error adding car: " + e.getMessage());
             return false;
         }
     }
@@ -123,9 +120,19 @@ public class DatabaseManager {
             
         } catch (SQLException e) {
             System.err.println("Error retrieving cars: " + e.getMessage());
+            e.printStackTrace();
             showError("Error retrieving cars: " + e.getMessage());
         }
         
         return cars;
+    }
+
+    private static void showError(String message) {
+        JOptionPane.showMessageDialog(
+            null,
+            message,
+            "Database Error",
+            JOptionPane.ERROR_MESSAGE
+        );
     }
 }
