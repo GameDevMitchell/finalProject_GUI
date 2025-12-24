@@ -1,12 +1,13 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 public class DatabaseManager {
-    // Database connection details
-    private static final String URL = "jdbc:mysql://localhost:3306/smartdrive_rentals";
+    // Database connection details - update these with your MySQL credentials
+    private static final String URL = "jdbc:mysql://localhost:3306/smartdrive_rentals?useSSL=false&allowPublicKeyRetrieval=true";
     private static final String USER = "root";
-    private static final String PASSWORD = ""; // Set your database password here
+    private static final String PASSWORD = ""; // Leave empty if no password
 
     // SQL queries
     private static final String CREATE_TABLE = """n            CREATE TABLE IF NOT EXISTS cars (
@@ -24,8 +25,16 @@ public class DatabaseManager {
 
     private static final String GET_ALL_CARS = "SELECT * FROM cars";
 
+    // Load the MySQL JDBC driver when the class is loaded
     static {
-        initializeDatabase();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            initializeDatabase();
+        } catch (ClassNotFoundException e) {
+            showError("MySQL JDBC Driver not found. Please add it to your project's classpath.");
+        } catch (Exception e) {
+            showError("Failed to initialize database: " + e.getMessage());
+        }
     }
 
     private static void initializeDatabase() {
@@ -47,14 +56,15 @@ public class DatabaseManager {
 
     private static Connection getConnection() throws SQLException {
         try {
-            // Load the MySQL JDBC driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            // Try to establish a connection with a 5-second timeout
             return DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (ClassNotFoundException e) {
-            throw new SQLException("MySQL JDBC Driver not found", e);
+        } catch (SQLException e) {
+            showError("Could not connect to the database. Please check if MySQL is running and the credentials are correct.\n\nError: " + e.getMessage());
+            throw e;
         }
     }
 
+    // Add a new car to the database
     public static boolean addCar(Car car) {
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(INSERT_CAR)) {
@@ -68,14 +78,20 @@ public class DatabaseManager {
             pstmt.setBoolean(7, car.isAvailable());
             
             int rowsAffected = pstmt.executeUpdate();
-            return rowsAffected > 0;
+            if (rowsAffected > 0) {
+                System.out.println("Car added successfully: " + car.getRegistrationNumber());
+                return true;
+            }
+            return false;
             
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error adding car: " + e.getMessage());
+            showError("Database error: " + e.getMessage());
             return false;
         }
     }
 
+    // Get all cars from the database
     public static List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
         
@@ -97,7 +113,8 @@ public class DatabaseManager {
             }
             
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error retrieving cars: " + e.getMessage());
+            showError("Error retrieving cars: " + e.getMessage());
         }
         
         return cars;

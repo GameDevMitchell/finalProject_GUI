@@ -15,25 +15,26 @@ public class CarForm extends JFrame {
         // Set up the main window
         setTitle("SmartDrive Rentals - Car Management System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600); // Slightly larger window
+        setMinimumSize(new Dimension(800, 600));
         setLocationRelativeTo(null); // Center on screen
 
         // Main container with some padding
-        JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        mainPanel.setBackground(new Color(245, 245, 245)); // Light gray background
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.setBackground(new Color(240, 243, 248)); // Light blue-gray background
 
         // Form panel where we'll put all the input fields
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(70, 130, 180), 1),
-                "  Car Details  ",
+                "  CAR DETAILS  ",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 14),
-                new Color(70, 130, 180)));
-        formPanel.setBackground(Color.WHITE);
+                new Font("Segoe UI", Font.BOLD, 14),
+                new Color(50, 100, 150)));
+        formPanel.setBackground(new Color(255, 255, 255, 240)); // Slightly transparent white
         formPanel.setOpaque(true);
+        formPanel.setPreferredSize(new Dimension(750, 300));
 
         // This helps us position everything neatly in the form
         GridBagConstraints gbc = new GridBagConstraints();
@@ -41,8 +42,8 @@ public class CarForm extends JFrame {
         gbc.insets = new Insets(8, 10, 8, 10); // More padding around elements
 
         // Add all the form fields with proper spacing and styling
-        Font labelFont = new Font("Arial", Font.PLAIN, 13);
-        Font fieldFont = new Font("Arial", Font.PLAIN, 14);
+        Font labelFont = new Font("Segoe UI", Font.PLAIN, 13);
+        Font fieldFont = new Font("Segoe UI", Font.PLAIN, 14);
 
         // Registration Number
         addFormField(formPanel, gbc, "Registration Number:", 0);
@@ -83,14 +84,24 @@ public class CarForm extends JFrame {
             }
         }
 
-        // Button panel with some nice styling
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
-        buttonPanel.setBackground(new Color(245, 245, 245));
+        // Button panel with GridLayout for consistent button sizes
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 15, 0));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        buttonPanel.setBackground(new Color(240, 243, 248));
 
-        // Create buttons with consistent styling
-        addButton = createStyledButton("Add Car", new Color(76, 175, 80), Color.WHITE);
-        viewAllButton = createStyledButton("View All Cars", new Color(66, 165, 245), Color.WHITE);
-        clearButton = createStyledButton("Clear Form", new Color(244, 67, 54), Color.WHITE);
+        // Add some padding around the button panel
+        JPanel buttonContainer = new JPanel(new BorderLayout());
+        buttonContainer.setBackground(new Color(240, 243, 248));
+        buttonContainer.add(buttonPanel, BorderLayout.CENTER);
+        buttonContainer.setBorder(BorderFactory.createEmptyBorder(0, 50, 0, 50)); // Left and right margins
+
+        // Create buttons with consistent styling and icons
+        addButton = createStyledButton("  Add Car  ", new Color(46, 125, 50), Color.WHITE,
+                UIManager.getIcon("OptionPane.informationIcon"));
+        viewAllButton = createStyledButton("  View All Cars  ", new Color(26, 115, 232), Color.WHITE,
+                UIManager.getIcon("FileChooser.listViewIcon"));
+        clearButton = createStyledButton("  Clear Form  ", new Color(183, 28, 28), Color.WHITE,
+                UIManager.getIcon("OptionPane.errorIcon"));
 
         // Make buttons respond to mouse hover
         setupButtonHoverEffect(addButton, new Color(56, 142, 60));
@@ -113,10 +124,12 @@ public class CarForm extends JFrame {
         buttonPanel.add(clearButton);
 
         // Make sure the buttons are always visible and properly sized
-        Dimension buttonSize = new Dimension(140, 40);
+        Dimension buttonSize = new Dimension(180, 45);
         for (Component comp : buttonPanel.getComponents()) {
             if (comp instanceof JButton) {
                 comp.setPreferredSize(buttonSize);
+                comp.setMinimumSize(buttonSize);
+                comp.setMaximumSize(buttonSize);
                 ((JButton) comp).setFocusPainted(false);
             }
         }
@@ -137,14 +150,25 @@ public class CarForm extends JFrame {
                 "  System Output  ",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 14),
+                new Font("Segoe UI", Font.BOLD, 14),
                 new Color(70, 130, 180)));
         scrollPane.setBackground(Color.WHITE);
 
-        // Add components to main panel
-        mainPanel.add(formPanel, BorderLayout.NORTH);
-        mainPanel.add(buttonPanel, BorderLayout.CENTER);
-        mainPanel.add(scrollPane, BorderLayout.SOUTH);
+        // Add components to main panel with proper spacing
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(new Color(240, 243, 248));
+        topPanel.add(formPanel, BorderLayout.NORTH);
+
+        // Add some vertical space between form and buttons
+        topPanel.add(Box.createVerticalStrut(15), BorderLayout.CENTER);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(buttonContainer, BorderLayout.CENTER);
+
+        // Add the output area in a scroll pane at the bottom
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        bottomPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         // Add main panel to frame
         add(mainPanel);
@@ -153,7 +177,7 @@ public class CarForm extends JFrame {
     // Helper method to add a label to the form
     private void addFormField(JPanel panel, GridBagConstraints gbc, String label, int y) {
         JLabel labelComponent = new JLabel(label);
-        labelComponent.setFont(new Font("Arial", Font.PLAIN, 13));
+        labelComponent.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         gbc.gridx = 0;
         gbc.gridy = y;
         panel.add(labelComponent, gbc);
@@ -168,18 +192,39 @@ public class CarForm extends JFrame {
         panel.add(comp, gbc);
     }
 
-    // Create a nicely styled button with hover effects
-    private JButton createStyledButton(String text, Color bgColor, Color fgColor) {
-        JButton button = new JButton(text);
+    // Create a nicely styled button with hover effects and icon
+    private JButton createStyledButton(String text, Color bgColor, Color fgColor, Icon icon) {
+        JButton button = new JButton(text, icon);
         button.setBackground(bgColor);
         button.setForeground(fgColor);
-        button.setFont(new Font("Arial", Font.BOLD, 13));
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
         button.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(bgColor.darker(), 1),
-                BorderFactory.createEmptyBorder(8, 15, 8, 15)));
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)));
         button.setFocusPainted(false);
         button.setOpaque(true);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Add some space between icon and text
+        button.setIconTextGap(8);
+
+        // Set a fixed size for all buttons
+        Dimension buttonSize = new Dimension(180, 45);
+        button.setPreferredSize(buttonSize);
+        button.setMinimumSize(buttonSize);
+        button.setMaximumSize(buttonSize);
+
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor.darker());
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+            }
+        });
+
         return button;
     }
 
@@ -429,17 +474,24 @@ public class CarForm extends JFrame {
     public static void main(String[] args) {
         // Make the UI look like a native application
         try {
-            // Try to use the system's look and feel
+            // Set the system look and feel for a native appearance
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-            // Make the UI more modern with some custom settings
-            UIManager.put("Button.arc", 8);
-            UIManager.put("Component.arc", 8);
-            UIManager.put("TextComponent.arc", 5);
+            // Custom UI settings for a modern look
+            UIManager.put("Button.arc", 6);
+            UIManager.put("Component.arc", 6);
+            UIManager.put("TextComponent.arc", 4);
 
-            // Make sure text looks good on all systems
+            // Better font rendering
             System.setProperty("awt.useSystemAAFontSettings", "on");
             System.setProperty("swing.aatext", "true");
+
+            // Set default font for better cross-platform consistency
+            Font defaultFont = new Font("Segoe UI", Font.PLAIN, 13);
+            UIManager.put("Button.font", defaultFont);
+            UIManager.put("Label.font", defaultFont);
+            UIManager.put("TextField.font", defaultFont);
+            UIManager.put("TextArea.font", new Font("Consolas", Font.PLAIN, 13));
 
         } catch (Exception e) {
             // If we can't set the look and feel, the default will be used
@@ -454,14 +506,21 @@ public class CarForm extends JFrame {
                 CarForm form = new CarForm();
                 form.setVisible(true);
 
-                // Show a welcome message
-                form.outputArea.setText(
-                        "🚗 Welcome to SmartDrive Rentals! 🚗\n\n" +
-                                "To get started:\n" +
-                                "1. Fill in the car details\n" +
-                                "2. Click 'Add Car' to save to the database\n" +
-                                "3. Click 'View All Cars' to see your inventory\n\n" +
-                                "💡 Tip: Press Enter to submit the form, Esc to clear it, and F5 to refresh the list.");
+                // Show a welcome message with better formatting
+                String welcomeMessage = " 🚗 WELCOME TO SMARTDRIVE RENTALS 🚗\n" +
+                        "===================================\n\n" +
+                        "To get started:\n" +
+                        "1. Fill in the car details below\n" +
+                        "2. Click 'Add Car' to save to the database\n" +
+                        "3. Click 'View All Cars' to see your inventory\n\n" +
+                        "💡 TIPS:\n" +
+                        "• Press Enter to submit the form\n" +
+                        "• Press Esc to clear the form\n" +
+                        "• Press F5 to refresh the car list\n\n" +
+                        "🔍 Current Status: Ready";
+
+                form.outputArea.setText(welcomeMessage);
+                form.outputArea.setCaretPosition(0); // Scroll to top
 
             } catch (Exception e) {
                 // If something goes wrong, show an error dialog
