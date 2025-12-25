@@ -1,43 +1,32 @@
+package com.smartdriverentals.dao;
+
+import com.smartdriverentals.model.Car;
+import javax.swing.JOptionPane;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JOptionPane;
 
 public class DatabaseManager {
-    // Database connection details for JavaDB (Derby)
-    private static final String DB_NAME = "smartdrive_rentals";
-    private static final String URL = "jdbc:derby:" + DB_NAME + ";create=true";
-    private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-
-    // SQL queries
+    private static final String DB_URL = "jdbc:derby:data/smartdrive_rentals;create=true";
     private static final String CREATE_TABLE = """
             CREATE TABLE cars (
                 registration_number VARCHAR(20) PRIMARY KEY,
                 brand VARCHAR(50) NOT NULL,
                 model VARCHAR(50) NOT NULL,
-                "year" INT NOT NULL,
+                year INT NOT NULL,
                 color VARCHAR(30) NOT NULL,
                 daily_rate DOUBLE NOT NULL,
-                is_available BOOLEAN DEFAULT true
+                available BOOLEAN DEFAULT true
             )""";
 
     private static final String INSERT_CAR = """
-            INSERT INTO cars (registration_number, brand, model, "year", color, daily_rate, is_available)
-            VALUES (?, ?, ?, ?, ?, ?, ?)""";
+            INSERT INTO cars (registration_number, brand, model, year, color, daily_rate)
+            VALUES (?, ?, ?, ?, ?, ?)""";
 
-    private static final String GET_ALL_CARS = """
-            SELECT registration_number, brand, model, "year", color, daily_rate, is_available
-            FROM cars""";
+    private static final String GET_ALL_CARS = "SELECT * FROM cars";
 
-    // Load the Derby JDBC driver when the class is loaded
     static {
-        try {
-            Class.forName(DRIVER);
-            initializeDatabase();
-        } catch (Exception e) {
-            showError("Failed to initialize database: " + e.getMessage());
-            e.printStackTrace();
-        }
+        initializeDatabase();
     }
 
     private static void initializeDatabase() {
@@ -47,31 +36,16 @@ public class DatabaseManager {
             // Check if table exists
             try {
                 stmt.execute("SELECT 1 FROM cars");
-                System.out.println("Database table already exists");
             } catch (SQLException e) {
                 // Table doesn't exist, create it
-                System.out.println("Creating new database table...");
                 stmt.execute(CREATE_TABLE);
             }
-
         } catch (SQLException e) {
             showError("Error initializing database: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private static Connection getConnection() throws SQLException {
-        try {
-            System.out.println("Connecting to database: " + URL);
-            return DriverManager.getConnection(URL);
-        } catch (SQLException e) {
-            String errorMsg = "Could not connect to the database. Error: " + e.getMessage();
-            showError(errorMsg);
-            throw new SQLException(errorMsg, e);
-        }
-    }
-
-    // Add a new car to the database
     public static boolean addCar(Car car) {
         try (Connection conn = getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(INSERT_CAR)) {
@@ -82,24 +56,16 @@ public class DatabaseManager {
             pstmt.setInt(4, car.getYear());
             pstmt.setString(5, car.getColor());
             pstmt.setDouble(6, car.getDailyRate());
-            pstmt.setBoolean(7, car.isAvailable());
 
             int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Car added successfully: " + car.getRegistrationNumber());
-                return true;
-            }
-            return false;
-
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            System.err.println("Error adding car: " + e.getMessage());
-            e.printStackTrace();
             showError("Error adding car: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
 
-    // Get all cars from the database
     public static List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
 
@@ -115,17 +81,24 @@ public class DatabaseManager {
                         rs.getInt("year"),
                         rs.getString("color"),
                         rs.getDouble("daily_rate"));
-                car.setAvailable(rs.getBoolean("is_available"));
+                car.setAvailable(rs.getBoolean("available"));
                 cars.add(car);
             }
-
         } catch (SQLException e) {
-            System.err.println("Error retrieving cars: " + e.getMessage());
-            e.printStackTrace();
             showError("Error retrieving cars: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return cars;
+    }
+
+    private static Connection getConnection() throws SQLException {
+        try {
+            return DriverManager.getConnection(DB_URL);
+        } catch (SQLException e) {
+            showError("Could not connect to the database. Error: " + e.getMessage());
+            throw e;
+        }
     }
 
     private static void showError(String message) {
