@@ -1,20 +1,14 @@
-# build.ps1
+# build.ps1 - Simple build script for Car Management System
 $ErrorActionPreference = "Stop"
 
-# Set paths
-$srcDir = "src"
-$buildDir = "build"
-$libDir = "lib"
-$classpath = ".;$libDir\*"
-
 # Create build directory if it doesn't exist
-if (-not (Test-Path $buildDir)) {
-    New-Item -ItemType Directory -Path $buildDir | Out-Null
+if (-not (Test-Path "build")) {
+    New-Item -ItemType Directory -Path "build" | Out-Null
 }
 
-# Compile Java files
+# Compile all Java files
 Write-Host "Compiling Java files..."
-javac -d $buildDir -cp $classpath $srcDir\com\smartdriverentals\model\*.java $srcDir\com\smartdriverentals\dao\*.java $srcDir\com\smartdriverentals\ui\*.java
+javac -d build *.java
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Compilation failed"
