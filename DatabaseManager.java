@@ -3,106 +3,65 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseManager {
-    private static final String DB_URL = "jdbc:derby:smartdrive_db;create=true";
-    private static Connection connection;
-
+    private static final String DB_URL = "jdbc:derby:cardb;create=true";
+    
     static {
-        initializeDatabase();
-    }
-
-    private static void initializeDatabase() {
         try {
-            connection = DriverManager.getConnection(DB_URL);
-            Statement stmt = connection.createStatement();
-            
-            // Try to select from cars table, if it doesn't exist create it
+            Connection conn = DriverManager.getConnection(DB_URL);
+            Statement stmt = conn.createStatement();
             try {
-                stmt.execute("SELECT 1 FROM cars LIMIT 1");
+                stmt.executeQuery("SELECT * FROM cars LIMIT 1");
             } catch (SQLException e) {
-                // Table doesn't exist, create it
                 stmt.execute("CREATE TABLE cars (" +
-                           "registration_number VARCHAR(20) PRIMARY KEY, " +
-                           "brand VARCHAR(50) NOT NULL, " +
-                           "model VARCHAR(50) NOT NULL, " +
-                           "year INT NOT NULL, " +
-                           "color VARCHAR(30) NOT NULL, " +
-                           "daily_rate DOUBLE NOT NULL)");
+                           "registration VARCHAR(20) PRIMARY KEY, " +
+                           "brand VARCHAR(50), " +
+                           "model VARCHAR(50), " +
+                           "year INT, " +
+                           "price DOUBLE)");
             }
             stmt.close();
+            conn.close();
         } catch (SQLException e) {
-            System.err.println("Database initialization error: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Database error: " + e.getMessage());
         }
     }
 
     public static boolean addCar(Car car) {
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(DB_URL);
-            }
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(
+                 "INSERT INTO cars VALUES (?, ?, ?, ?, ?)")) {
             
-            PreparedStatement pstmt = connection.prepareStatement(
-                "INSERT INTO cars (registration_number, brand, model, year, color, daily_rate) " +
-                "VALUES (?, ?, ?, ?, ?, ?)");
-            
-            pstmt.setString(1, car.getRegistrationNumber());
+            pstmt.setString(1, car.getRegistration());
             pstmt.setString(2, car.getBrand());
             pstmt.setString(3, car.getModel());
             pstmt.setInt(4, car.getYear());
-            pstmt.setString(5, car.getColor());
-            pstmt.setDouble(6, car.getDailyRate());
+            pstmt.setDouble(5, car.getPrice());
             
-            int rowsAffected = pstmt.executeUpdate();
-            pstmt.close();
-            
-            return rowsAffected > 0;
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("Error adding car: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Add car error: " + e.getMessage());
             return false;
         }
     }
 
     public static List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
-        
-        try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(DB_URL);
-            }
-            
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM cars");
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM cars")) {
             
             while (rs.next()) {
-                Car car = new Car(
-                    rs.getString("registration_number"),
+                cars.add(new Car(
+                    rs.getString("registration"),
                     rs.getString("brand"),
                     rs.getString("model"),
                     rs.getInt("year"),
-                    rs.getString("color"),
-                    rs.getDouble("daily_rate")
-                );
-                cars.add(car);
+                    rs.getDouble("price")
+                ));
             }
-            
-            rs.close();
-            stmt.close();
         } catch (SQLException e) {
-            System.err.println("Error retrieving cars: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Get cars error: " + e.getMessage());
         }
-        
         return cars;
-    }
-
-    public static void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
-        }
     }
 }

@@ -1,154 +1,137 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 
 public class CarForm extends JFrame {
-    private JTextField registrationField, brandField, modelField, yearField, colorField, rateField;
+    private JTextField regField, brandField, modelField, yearField, priceField, searchField;
     private JTextArea outputArea;
-    private JButton addButton, viewAllButton, clearButton;
+    private JButton addButton, searchButton, clearButton;
 
     public CarForm() {
-        setTitle("SmartDrive Rentals - Car Management System");
+        setTitle("Car Rental System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500);
+        setSize(500, 400);
         setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        // Form panel
-        JPanel formPanel = new JPanel(new GridLayout(6, 2, 5, 5));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Add New Car"));
-
-        formPanel.add(new JLabel("Registration Number:"));
-        registrationField = new JTextField();
-        formPanel.add(registrationField);
-
-        formPanel.add(new JLabel("Brand:"));
+        JPanel mainPanel = new JPanel(new BorderLayout(5, 5));
+        
+        // Input panel
+        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 5, 5));
+        inputPanel.setBorder(BorderFactory.createTitledBorder("Add Car"));
+        
+        inputPanel.add(new JLabel("Registration:"));
+        regField = new JTextField();
+        inputPanel.add(regField);
+        
+        inputPanel.add(new JLabel("Brand:"));
         brandField = new JTextField();
-        formPanel.add(brandField);
-
-        formPanel.add(new JLabel("Model:"));
+        inputPanel.add(brandField);
+        
+        inputPanel.add(new JLabel("Model:"));
         modelField = new JTextField();
-        formPanel.add(modelField);
-
-        formPanel.add(new JLabel("Year:"));
+        inputPanel.add(modelField);
+        
+        inputPanel.add(new JLabel("Year:"));
         yearField = new JTextField();
-        formPanel.add(yearField);
+        inputPanel.add(yearField);
+        
+        inputPanel.add(new JLabel("Price:"));
+        priceField = new JTextField();
+        inputPanel.add(priceField);
 
-        formPanel.add(new JLabel("Color:"));
-        colorField = new JTextField();
-        formPanel.add(colorField);
-
-        formPanel.add(new JLabel("Daily Rate ($):"));
-        rateField = new JTextField();
-        formPanel.add(rateField);
+        // Search panel
+        JPanel searchPanel = new JPanel(new FlowLayout());
+        searchPanel.setBorder(BorderFactory.createTitledBorder("Search"));
+        searchPanel.add(new JLabel("Search:"));
+        searchField = new JTextField(15);
+        searchPanel.add(searchField);
+        searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> searchCars());
+        searchPanel.add(searchButton);
 
         // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout());
         addButton = new JButton("Add Car");
-        viewAllButton = new JButton("View All Cars");
-        clearButton = new JButton("Clear Form");
-
-        addButton.addActionListener(new AddCarListener());
-        viewAllButton.addActionListener(e -> viewAllCars());
-        clearButton.addActionListener(e -> clearForm());
-
+        addButton.addActionListener(e -> addCar());
+        clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> clearFields());
         buttonPanel.add(addButton);
-        buttonPanel.add(viewAllButton);
         buttonPanel.add(clearButton);
 
         // Output area
-        outputArea = new JTextArea(10, 40);
+        outputArea = new JTextArea(8, 40);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Output"));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Results"));
 
-        // Add panels to main panel
-        mainPanel.add(formPanel, BorderLayout.NORTH);
-        mainPanel.add(buttonPanel, BorderLayout.CENTER);
-        mainPanel.add(scrollPane, BorderLayout.SOUTH);
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+        mainPanel.add(searchPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        mainPanel.add(scrollPane, BorderLayout.EAST);
 
         add(mainPanel);
-
-        outputArea.setText("Welcome to SmartDrive Rentals!\n\n" +
-                         "1. Fill in car details and click 'Add Car'\n" +
-                         "2. Click 'View All Cars' to see all registered cars\n" +
-                         "3. Use 'Clear Form' to reset fields");
+        outputArea.setText("Welcome to Car Rental System!\nAdd cars or search for existing ones.");
     }
 
-    private void clearForm() {
-        registrationField.setText("");
+    private void addCar() {
+        try {
+            String reg = regField.getText().trim();
+            String brand = brandField.getText().trim();
+            String model = modelField.getText().trim();
+            int year = Integer.parseInt(yearField.getText().trim());
+            double price = Double.parseDouble(priceField.getText().trim());
+
+            if (reg.isEmpty() || brand.isEmpty() || model.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Fill all fields!");
+                return;
+            }
+
+            Car car = new Car(reg, brand, model, year, price);
+            if (DatabaseManager.addCar(car)) {
+                outputArea.setText("Car added:\n" + car);
+                clearFields();
+            } else {
+                outputArea.setText("Failed to add car!");
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid year or price!");
+        }
+    }
+
+    private void searchCars() {
+        String search = searchField.getText().trim();
+        List<Car> cars = DatabaseManager.getAllCars();
+        
+        StringBuilder result = new StringBuilder("Search Results:\n");
+        boolean found = false;
+        
+        for (Car car : cars) {
+            if (car.getRegistration().toLowerCase().contains(search.toLowerCase()) ||
+                car.getBrand().toLowerCase().contains(search.toLowerCase()) ||
+                car.getModel().toLowerCase().contains(search.toLowerCase())) {
+                result.append(car.toString()).append("\n");
+                found = true;
+            }
+        }
+        
+        if (!found) {
+            result.append("No cars found!");
+        }
+        
+        outputArea.setText(result.toString());
+    }
+
+    private void clearFields() {
+        regField.setText("");
         brandField.setText("");
         modelField.setText("");
         yearField.setText("");
-        colorField.setText("");
-        rateField.setText("");
-        registrationField.requestFocus();
-    }
-
-    private void viewAllCars() {
-        try {
-            java.util.List<Car> cars = DatabaseManager.getAllCars();
-            if (cars.isEmpty()) {
-                outputArea.setText("No cars found in the database.");
-            } else {
-                StringBuilder sb = new StringBuilder("=== All Registered Cars ===\n\n");
-                for (int i = 0; i < cars.size(); i++) {
-                    sb.append("Car ").append(i + 1).append(":\n");
-                    sb.append(cars.get(i).toString()).append("\n");
-                    sb.append("--------------------------\n");
-                }
-                outputArea.setText(sb.toString());
-            }
-        } catch (Exception e) {
-            outputArea.setText("Error retrieving cars: " + e.getMessage());
-        }
-    }
-
-    private class AddCarListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                String registration = registrationField.getText().trim();
-                String brand = brandField.getText().trim();
-                String model = modelField.getText().trim();
-                int year = Integer.parseInt(yearField.getText().trim());
-                String color = colorField.getText().trim();
-                double dailyRate = Double.parseDouble(rateField.getText().trim());
-
-                if (registration.isEmpty() || brand.isEmpty() || model.isEmpty() || color.isEmpty()) {
-                    JOptionPane.showMessageDialog(CarForm.this,
-                            "Please fill in all fields.",
-                            "Input Error",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                Car car = new Car(registration, brand, model, year, color, dailyRate);
-                if (DatabaseManager.addCar(car)) {
-                    outputArea.setText("Car added successfully!\n\n" + car.toString());
-                    clearForm();
-                } else {
-                    outputArea.setText("Failed to add car. Please try again.");
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(CarForm.this,
-                        "Please enter valid numbers for year and daily rate.",
-                        "Input Error",
-                        JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(CarForm.this,
-                        "An error occurred: " + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        priceField.setText("");
+        searchField.setText("");
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new CarForm().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new CarForm().setVisible(true));
     }
 }

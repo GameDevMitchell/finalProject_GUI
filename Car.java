@@ -1,51 +1,26 @@
 public class Car {
-    private String registrationNumber;
+    private String registration;
     private String brand;
     private String model;
     private int year;
-    private String color;
-    private double dailyRate;
+    private double price;
 
-    public Car(String registrationNumber, String brand, String model, int year, String color, double dailyRate) {
-        this.registrationNumber = registrationNumber;
+    public Car(String registration, String brand, String model, int year, double price) {
+        this.registration = registration;
         this.brand = brand;
         this.model = model;
         this.year = year;
-        this.color = color;
-        this.dailyRate = dailyRate;
+        this.price = price;
     }
 
-    public String getRegistrationNumber() {
-        return registrationNumber;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public int getYear() {
-        return year;
-    }
-
-    public String getColor() {
-        return color;
-    }
-
-    public double getDailyRate() {
-        return dailyRate;
-    }
+    public String getRegistration() { return registration; }
+    public String getBrand() { return brand; }
+    public String getModel() { return model; }
+    public int getYear() { return year; }
+    public double getPrice() { return price; }
 
     @Override
     public String toString() {
-        return "Registration: " + registrationNumber + 
-               "\nBrand: " + brand + 
-               "\nModel: " + model + 
-               "\nYear: " + year + 
-               "\nColor: " + color + 
-               "\nDaily Rate: $" + dailyRate;
+        return registration + " - " + brand + " " + model + " (" + year + ") - $" + price;
     }
 }
