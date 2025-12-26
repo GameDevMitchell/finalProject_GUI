@@ -1,70 +1,38 @@
-# SmartDrive Rentals - Car Management System
+# Car Rental System
 
-A Java Swing application for managing a car rental system with a graphical user interface.
+A simple Java Swing application for managing car rentals with basic add and search functionality.
 
 ## Features
 
 - Add new cars to the system
-- View all registered cars
-- Search for cars by registration number or name
-- Clean and intuitive user interface
-- Persistent storage using Apache Derby database
+- Search for cars by registration, brand, or model
+- Simple and clean user interface
+- In-memory storage (no database setup required)
 
-## Prerequisites
+## Files
 
-- Java Development Kit (JDK) 8 or later
-- PowerShell (included with Windows)
+- [Car.java](cci:7://file:///c:/java_projects/finalProject_GUI/Car.java:0:0-0:0) - Car model class
+- [CarForm.java](cci:7://file:///c:/java_projects/finalProject_GUI/CarForm.java:0:0-0:0) - Main GUI application
+- [DatabaseManager.java](cci:7://file:///c:/java_projects/finalProject_GUI/DatabaseManager.java:0:0-0:0) - Simple data storage
+- [Main.java](cci:7://file:///c:/java_projects/finalProject_GUI/Main.java:0:0-0:0) - Application entry point
 
-## Project Structure
+## How to Run
 
-```
-finalProject_GUI/
-├── build/           # Compiled .class files
-├── data/            # Database files
-├── lib/             # External libraries (Apache Derby)
-├── src/             # Source code
-│   └── com/
-│       └── smartdriverentals/
-│           ├── dao/            # Data Access Objects
-│           ├── model/          # Data models
-│           └── ui/             # User interface
-├── build.ps1        # Build script
-├── run.ps1          # Run script
-└── README.md        # This file
-```
-
-## Building and Running
-
-1. **Build the application**:
-   ```powershell
-   .\build.ps1
-   ```
+1. **Compile all files**:
+   ```bash
+   javac *.java
 
 2. **Run the application**:
-   ```powershell
-   .\run.ps1
-   ```
+   ```bash
+   java Main
+
 
 ## Usage
-
-1. **Add a new car**:
-   - Fill in the car details in the form
-   - Click the "Add Car" button
-
-2. **View all cars**:
-   - Click the "View All Cars" button to see all registered cars
-
-3. **Search for a car**:
-   - Enter a registration number or car name in the search field
-   - Click the "Search" button
-
-4. **Clear the form**:
-   - Click the "Clear Form" button to reset all input fields
-
-## Database
-
-The application uses Apache Derby as an embedded database. The database files are stored in the `data/` directory and are automatically created when you run the application for the first time.
-
-## License
-
-This project is licensed under the MIT License.
+1. Add a car:
+   - Enter registration, brand, model, year, and price
+   - Click "Add Car"
+2. Search cars:
+   - Enter search term (registration, brand, or model)
+   - Click "Search"
+3. Clear form:
+   - Click "Clear" to reset all fields
